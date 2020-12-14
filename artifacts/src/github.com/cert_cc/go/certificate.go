@@ -15,25 +15,25 @@ type SmartContract struct {
 }
 
 type Certificate struct {
-	ID          string `json:"ID"`
-	FileHash    string `json:"fileHash"`
-	URL         string `json:"url"`
-	CertType    string `json:"certType"`
-	CourseName  string `json:"courseName"`
-	FirstName   string `json:"firstName"`
-	LastName    string `json:"lastName"`
-	Status      string `json:"status"`
-	Certifier   string `json:"certifier"`
-	StudentAck  string `json:"studentAck"`
-	ExpiryDate  uint64 `json:"expiryDate"`
-	IssueDate   string `json:"issueDate"`
-	RecordDate  uint64 `json:"recordDate"`
-	ReissueDate uint64 `json:"reissueDate"`
-	Metadata    string `json:"metadata"`
-	DocType     string `json:"docType"`
+	CertificateId          string `json:"CertificateId"`
+	FileHash    		string `json:"fileHash"`
+	FilePath         	string `json:"filePath"`
+	CertType    		string `json:"certType"`
+	Status      		string `json:"status"`
+	Certifier1   		string `json:"certifier1"`
+	Certifier2   		string `json:"certifier2"`
+	Certifier3   		string `json:"certifier3"`
+	StudentAck  		string `json:"studentAck"`
+	AllValues   		string `json:"allValues"`
+	CurrentOwner		string `json:"currentOwner"`
+	TransferTo		string `json:"transferTo"`
+	ExpiryDate  		uint64 `json:"expiryDate"`
+	IssueDate   		uint64 `json:"issueDate"`
+	RecordDate  		uint64 `json:"recordDate"`
+	ReissueDate 		uint64 `json:"reissueDate"`
 }
 
-func (s *SmartContract) CreateCertificate(ctx contractapi.TransactionContextInterface, certificateData string) (string, error) {
+func (s *SmartContract) AddActive(ctx contractapi.TransactionContextInterface, certificateData string) (string, error) {
 
 	if len(certificateData) == 0 {
 		return "", fmt.Errorf("Please pass the correct certificate data")
@@ -50,7 +50,7 @@ func (s *SmartContract) CreateCertificate(ctx contractapi.TransactionContextInte
 		return "", fmt.Errorf("Failed while marshling certificate. %s", err.Error())
 	}
 
-	return ctx.GetStub().GetTxID(), ctx.GetStub().PutState(certificate.ID, certificateAsBytes)
+	return ctx.GetStub().GetTxID(), ctx.GetStub().PutState(certificate.CertificateId, certificateAsBytes)
 }
 
 func (s *SmartContract) GetCertificateById(ctx contractapi.TransactionContextInterface, certificateId string) (*Certificate, error) {
@@ -94,7 +94,7 @@ func (s *SmartContract) UpdateCertificate(ctx contractapi.TransactionContextInte
 	certificate := new(Certificate)
 	_ = json.Unmarshal(certificateAsBytes, certificate)
 
-	certificate.URL = filePath
+	certificate.FilePath = filePath
 	certificate.FileHash = fileHash
 	certificate.Status = "Active"
 
@@ -103,7 +103,7 @@ func (s *SmartContract) UpdateCertificate(ctx contractapi.TransactionContextInte
 		return "", fmt.Errorf("Failed while marshling certificate. %s", err.Error())
 	}
 
-	return ctx.GetStub().GetTxID(), ctx.GetStub().PutState(certificate.ID, certificateAsBytes)
+	return ctx.GetStub().GetTxID(), ctx.GetStub().PutState(certificate.CertificateId, certificateAsBytes)
 
 }
 
@@ -134,7 +134,7 @@ func (s *SmartContract) ReissueCertificate(ctx contractapi.TransactionContextInt
 		return "", fmt.Errorf("Failed while marshling certificate. %s", err.Error())
 	}
 
-	return ctx.GetStub().GetTxID(), ctx.GetStub().PutState(certificate.ID, certificateAsBytes)
+	return ctx.GetStub().GetTxID(), ctx.GetStub().PutState(certificate.CertificateId, certificateAsBytes)
 
 }
 
@@ -164,11 +164,11 @@ func (s *SmartContract) RevokeCertificate(ctx contractapi.TransactionContextInte
 		return "", fmt.Errorf("Failed while marshling certificate. %s", err.Error())
 	}
 
-	return ctx.GetStub().GetTxID(), ctx.GetStub().PutState(certificate.ID, certificateAsBytes)
+	return ctx.GetStub().GetTxID(), ctx.GetStub().PutState(certificate.CertificateId, certificateAsBytes)
 
 }
 
-func (s *SmartContract) GetCertificatesForQuery(ctx contractapi.TransactionContextInterface, queryString string) ([]Certificate, error) {
+func (s *SmartContract) query(ctx contractapi.TransactionContextInterface, queryString string) ([]Certificate, error) {
 	queryResults, err := s.getQueryResultForQueryString(ctx, queryString)
 
 	if err != nil {
@@ -177,6 +177,21 @@ func (s *SmartContract) GetCertificatesForQuery(ctx contractapi.TransactionConte
 
 	return queryResults, nil
 
+}
+
+func (s *SmartContract) StudentAcknowledgement(ctx contractapi.TransactionContextInterface, certificateId string,studentAck string ) error {
+        certificate := Certificate{
+
+		CertificateId : certificateId,
+		StudentAck : studentAck,
+	}
+
+	certificateJSON, err := json.Marshal(certificate)
+	if err != nil {
+		return err
+	}
+
+	return ctx.GetStub().PutState(certificateId, certificateJSON)
 }
 
 func (s *SmartContract) getQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]Certificate, error) {
