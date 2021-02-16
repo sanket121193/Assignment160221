@@ -68,13 +68,19 @@ const invokeTransaction = async (channelName, chaincodeName, fcn, args, username
         
 
         switch (fcn) {
-            case "AddActive":
+            case "AddPatient":
                 result = await contract.submitTransaction(fcn, args[0]);
-                message = `Successfully added the Certificate asset with key ${JSON.parse(args[0]).ID}`
+                message = `Successfully added the Patient asset with key ${JSON.parse(args[0]).PatientId}`
                 console.log("result si -----------------", result.toString())
                 result = {"txId": result.toString()}
                 break;
-        
+             case "UpdatePatient":
+                result = await contract.submitTransaction(fcn, args[0]);
+                message = `Successfully added the Certificate asset with key ${JSON.parse(args[0]).PatientId}`
+                console.log("result si -----------------", result.toString())
+                result = {"txId": result.toString()}
+                break;
+            
             default:
                 return `Invocation require either createCar or changeCarOwner as function but got ${fcn}`
                 // break;
